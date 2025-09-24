@@ -224,28 +224,26 @@
                     <div class="grid md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-forest font-medium mb-2">Full Name *</label>
-                            <input type="text" required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
+                            <input type="text" name="name" required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
                         </div>
                         <div>
                             <label class="block text-forest font-medium mb-2">Age *</label>
-                            <input type="number" required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
+                            <input type="number" name="age" required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
                         </div>
                     </div>
-                    
                     <div class="grid md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-forest font-medium mb-2">Email *</label>
-                            <input type="email" required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
+                            <input type="email" name="email" required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
                         </div>
                         <div>
                             <label class="block text-forest font-medium mb-2">Phone Number *</label>
-                            <input type="tel" required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
+                            <input type="tel" name="phone" required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
                         </div>
                     </div>
-                    
                     <div>
                         <label class="block text-forest font-medium mb-2">Primary Health Concern *</label>
-                        <select required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
+                        <select name="concern" required class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
                             <option value="">Select your primary concern</option>
                             <option value="digestive">Digestive Issues</option>
                             <option value="respiratory">Respiratory Problems</option>
@@ -257,17 +255,15 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
-                    
                     <div>
                         <label class="block text-forest font-medium mb-2">Describe Your Symptoms</label>
-                        <textarea rows="4" class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all" placeholder="Please describe your symptoms, duration, and any previous treatments..."></textarea>
+                        <textarea name="symptoms" rows="4" class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all" placeholder="Please describe your symptoms, duration, and any previous treatments..."></textarea>
                     </div>
-                    
                     <div>
                         <label class="block text-forest font-medium mb-2">Preferred Consultation Time</label>
                         <div class="grid md:grid-cols-2 gap-4">
-                            <input type="date" class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
-                            <select class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
+                            <input type="date" name="date" class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
+                            <select name="time" class="w-full px-4 py-3 border border-sand rounded-xl focus:outline-none focus:ring-2 focus:ring-sage transition-all">
                                 <option value="">Select time slot</option>
                                 <option value="morning">Morning (9 AM - 12 PM)</option>
                                 <option value="afternoon">Afternoon (1 PM - 5 PM)</option>
@@ -275,14 +271,12 @@
                             </select>
                         </div>
                     </div>
-                    
                     <div class="flex items-start space-x-3">
-                        <input type="checkbox" required class="mt-1 w-5 h-5 text-sage border-sand rounded focus:ring-sage">
+                        <input type="checkbox" name="consent" required class="mt-1 w-5 h-5 text-sage border-sand rounded focus:ring-sage">
                         <label class="text-sm text-gray-600">
                             I agree to the terms and conditions and consent to the collection of my health information for consultation purposes. *
                         </label>
                     </div>
-                    
                     <button type="submit" class="w-full bg-gradient-to-r from-sage to-forest text-white py-4 rounded-xl text-lg font-semibold hover-lift pulse-green">
                         Schedule My Consultation
                     </button>
@@ -338,24 +332,49 @@
             });
         }
 
-        // Form submission handler
-        document.getElementById('consultationForm').addEventListener('submit', function(e) {
+        // Form submission handler (send to backend)
+        document.getElementById('consultationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Show success message
-            const button = e.target.querySelector('button[type="submit"]');
+            const form = e.target;
+            const data = {
+                name: form.name.value,
+                age: form.age.value,
+                email: form.email.value,
+                phone: form.phone.value,
+                concern: form.concern.value,
+                symptoms: form.symptoms.value,
+                date: form.date.value,
+                time: form.time.value,
+                consent: form.consent.checked
+            };
+            const button = form.querySelector('button[type="submit"]');
             const originalText = button.textContent;
-            
-            button.textContent = 'Booking Confirmed! ✓';
-            button.classList.add('bg-green-500');
-            
-            setTimeout(() => {
+            button.textContent = 'Booking...';
+            button.disabled = true;
+            try {
+                const res = await fetch('http://localhost:4000/api/book', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    button.textContent = 'Booking Confirmed! ✓';
+                    button.classList.add('bg-green-500');
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.classList.remove('bg-green-500');
+                        button.disabled = false;
+                        showConfirmationModal();
+                        form.reset();
+                    }, 2000);
+                } else {
+                    throw new Error('Booking failed');
+                }
+            } catch (err) {
+                alert('Booking failed. Please try again.');
                 button.textContent = originalText;
-                button.classList.remove('bg-green-500');
-                
-                // Show confirmation modal
-                showConfirmationModal();
-            }, 2000);
+                button.disabled = false;
+            }
         });
 
         function showConfirmationModal() {
@@ -407,5 +426,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9843a0e432a7b29d',t:'MTc1ODczMTAyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>    
 </html>
